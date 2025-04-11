@@ -15,7 +15,7 @@ const CodePageSchema = new mongoose.Schema({
     },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User", // Reference to the User who created the page
+        ref: "User",
         required: true,
     },
 }, {

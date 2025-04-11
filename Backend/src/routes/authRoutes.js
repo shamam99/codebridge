@@ -7,7 +7,6 @@ const router = express.Router();
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 
-// Google OAuth routes
 router.get(
     "/google",
     passport.authenticate("google", { scope: ["profile", "email"] })

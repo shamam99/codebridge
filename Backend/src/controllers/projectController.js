@@ -6,26 +6,32 @@ const User = require("../models/User");
 // @access Private
 const createProject = async (req, res) => {
     try {
-        const { title, description, projectUrl } = req.body;
+        const { title, description, visibility } = req.body;
+
+        if (!req.file) {
+            return res.status(400).json({ message: "Project file is required" });
+        }
 
         const newProject = new Project({
             title,
             description,
-            projectUrl,
+            fileUrl: `/uploads/projects/${req.file.filename}`,
+            visibility: visibility || "private",
             createdBy: req.user._id,
         });
 
         await newProject.save();
 
-        const user = await User.findById(req.user._id);
-        user.projects.push(newProject._id);
-        await user.save();
+        await User.findByIdAndUpdate(req.user._id, {
+            $push: { projects: newProject._id }
+        });
 
-        res.status(201).json({ message: "Project created successfully", project: newProject });
+        res.status(201).json({ message: "Project uploaded", project: newProject });
     } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
+        res.status(500).json({ message: "Upload failed", error: error.message });
     }
 };
+
 
 // @desc Fetch all projects for a user
 // @route GET /api/users/:id/projects

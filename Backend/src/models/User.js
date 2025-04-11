@@ -17,21 +17,26 @@ const UserSchema = new mongoose.Schema({
     password: {
         type: String,
         required: function () {
-            // Make password required only if not an OAuth user
             return !this.googleId;
         },
     },
+    role: {
+        type: String,
+        enum: ["user", "admin"],
+        default: "user",
+    },
+
     googleId: {
-        type: String, // Store Google ID for OAuth users
+        type: String, 
         default: null,
     },
     username: {
         type: String,
-        unique: true, // To ensure usernames are unique
+        unique: true, 
         default: null,
     },
     avatar: {
-        type: String, // URL to the avatar image
+        type: String, 
         default: null,
     },
     description: {
@@ -41,13 +46,13 @@ const UserSchema = new mongoose.Schema({
     followers: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User", // Reference to other users
+            ref: "User", 
         },
     ],
     following: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User", // Reference to other users
+            ref: "User", 
         },
     ],
     company: {
@@ -55,19 +60,19 @@ const UserSchema = new mongoose.Schema({
         default: null,
     },
     location: {
-        type: String, // Could be enhanced with a predefined list of countries
+        type: String, 
         default: null,
     },
     socialMediaLinks: [
         {
-            platform: { type: String }, //"LinkedIn", "GitHub", etc.
+            platform: { type: String }, 
             url: { type: String },
         },
     ],
     projects: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Project", // Reference to the Project model
+            ref: "Project", 
         },
     ],
 }, {

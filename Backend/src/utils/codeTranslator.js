@@ -98,15 +98,12 @@ const mappings = {
 // @param {string} toLang - Target language
 const handleIndentation = (codeLines, fromLang, toLang) => {
     if (fromLang === "javascript" && toLang === "python") {
-        let indentLevel = 0; // Tracks current indentation level
+        let indentLevel = 0; 
         return codeLines.map((line) => {
-            // Decrease indentation for closing braces
             if (line.trim().endsWith("}")) indentLevel--;
 
-            // Add indentation to the line
             const indentedLine = "    ".repeat(Math.max(indentLevel, 0)) + line.replace(/[{}]/g, "").trim();
 
-            // Increase indentation for opening braces
             if (line.trim().endsWith("{")) indentLevel++;
 
             return indentedLine;
@@ -121,7 +118,6 @@ const handleIndentation = (codeLines, fromLang, toLang) => {
 // @param {string} toLang - Target language
 // @returns {string} Translated code
 const translateCode = (code, fromLang, toLang) => {
-    // Validate supported languages
     if (!mappings[fromLang] || !mappings[fromLang][toLang]) {
         throw new Error(`Translation from ${fromLang} to ${toLang} is not supported.`);
     }
@@ -129,7 +125,6 @@ const translateCode = (code, fromLang, toLang) => {
     const map = mappings[fromLang][toLang];
     const codeLines = code.split("\n");
 
-    // Translate each line based on mappings
     let translatedLines = codeLines.map((line) => {
         let translatedLine = line;
         Object.keys(map).forEach((pattern) => {
@@ -139,10 +134,8 @@ const translateCode = (code, fromLang, toLang) => {
         return translatedLine;
     });
 
-    // Handle Indentation for Python if applicable
     translatedLines = handleIndentation(translatedLines, fromLang, toLang);
 
-    // Join the translated lines into a single string
     return translatedLines.join("\n");
 };
 

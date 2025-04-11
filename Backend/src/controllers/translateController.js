@@ -7,10 +7,8 @@ const translateCodeHandler = async (req, res) => {
     const { code, fromLang, toLang } = req.body;
 
     try {
-        // Translate the code using the utility
         const translatedCode = translateCode(code, fromLang, toLang);
 
-        // Save translation to history
         if (req.user) {
             await Translation.create({
                 userId: req.user._id,
@@ -21,7 +19,6 @@ const translateCodeHandler = async (req, res) => {
             });
         }
 
-        // Send response
         res.json({
             message: "Translation successful",
             translatedCode,
@@ -63,7 +60,6 @@ const runCode = async (req, res) => {
     const { code, language } = req.body;
 
     try {
-        // Mocked logic for running code (integration with an actual code execution engine needed)
         const output = `Code executed successfully in ${language}.`;
 
         res.status(200).json({ message: "Code executed successfully", output });
@@ -78,7 +74,6 @@ const debugCode = async (req, res) => {
     const { code, language } = req.body;
 
     try {
-        // Mocked logic for debugging code (integration with an actual debugger needed)
         const debugOutput = `Code debugged successfully in ${language}.`;
 
         res.status(200).json({ message: "Code debugged successfully", debugOutput });

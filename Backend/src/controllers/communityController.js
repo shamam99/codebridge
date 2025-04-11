@@ -1,12 +1,41 @@
 const Post = require("../models/Post");
+const User = require("../models/User");
+
 
 // @desc Fetch All Posts
 // @route GET /api/community
 // @access Private
 const getPosts = async (req, res) => {
-    const posts = await Post.find();
-    res.json(posts);
-};
+    try {
+      const userId = req.user._id;
+      const searchQuery = req.query.search || "";
+  
+      // Get the user's following list
+      const user = await User.findById(userId).select("following");
+      const followingIds = user.following;
+  
+      // Include both followed users and self
+      const visibleUserIds = [...followingIds, userId];
+  
+      // Fetch posts from visible users and matching search
+      const posts = await Post.find({
+        userId: { $in: visibleUserIds },
+        $or: [
+          { title: { $regex: searchQuery, $options: "i" } },
+          { content: { $regex: searchQuery, $options: "i" } },
+        ],
+      })
+        .populate("userId", "name avatar")
+        .sort({ timestamp: -1 });
+  
+      res.json(posts);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      res.status(500).json({ message: "Failed to load posts", error });
+    }
+  };
+  
+  
 
 // @desc Fetch Post by ID
 // @route GET /api/community/:id

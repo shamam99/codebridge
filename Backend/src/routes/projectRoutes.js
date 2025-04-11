@@ -2,17 +2,15 @@ const express = require("express");
 const router = express.Router();
 const { createProject, getUserProjects, togglePinProject } = require("../controllers/projectController");
 const { protect } = require("../middlewares/authMiddleware");
+const upload = require("../middlewares/uploadMiddleware");
 
-// Create a new project
-router.post("/", protect, createProject);
+// Upload project
+router.post("/", protect, upload.single("projectFile"), createProject);
 
-// Fetch all projects for a user
+// Get all projects for a user
 router.get("/users/:id/projects", getUserProjects);
 
-// Pin/Unpin a project
+// Pin/Unpin project
 router.post("/:id/pin", protect, togglePinProject);
-
-// Pin/Unpin a project
-router.post("/:id/unpin", protect, togglePinProject);
 
 module.exports = router;

@@ -10,6 +10,8 @@ const {
     getFollowing,
 } = require("../controllers/userController");
 const { protect } = require("../middlewares/authMiddleware");
+const multer = require("multer");
+const upload = multer({ storage: multer.memoryStorage() });
 
 
 // Get Logged-In User Profile
@@ -19,7 +21,7 @@ router.get("/profile", protect, getMyProfile);
 router.get("/:id", getUserProfile);
 
 // Update Logged-In User Profile
-router.put("/profile", protect, updateUserProfile);
+router.put("/profile", protect, upload.single("avatar"), updateUserProfile); 
 
 // Follow a User
 router.post("/:id/follow", protect, followUser);

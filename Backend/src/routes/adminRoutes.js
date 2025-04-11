@@ -7,7 +7,7 @@ const router = express.Router();
 // Admin Login
 router.post("/login", loginAdmin);
 
-// Create a New Admin (Protected by admin middleware)
+// Create a New Admin 
 router.post("/create", protect, admin, createAdmin);
 
 module.exports = router;

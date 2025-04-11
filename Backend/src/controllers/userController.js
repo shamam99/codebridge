@@ -1,4 +1,10 @@
 const User = require("../models/User");
+const multer = require("multer");
+const fs = require("fs");
+
+// Multer config
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 
 // @desc Get logged-in user profile
@@ -6,31 +12,32 @@ const User = require("../models/User");
 // @access Private
 const getMyProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id)
-            .populate("followers", "name username avatar")
-            .populate("following", "name username avatar")
-            .populate("projects", "title description");
-
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        res.status(200).json({
-            name: user.name,
-            email: user.email,
-            avatar: user.avatar,
-            bio: user.bio,
-            location: user.location,
-            company: user.company,
-            socialLinks: user.socialLinks,
-            followers: user.followers,
-            following: user.following,
-            projects: user.projects,
-        });
+      const user = await User.findById(req.user._id)
+        .populate("followers", "name username avatar")
+        .populate("following", "name username avatar")
+        .populate("projects", "title description");
+  
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      res.status(200).json({
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        bio: user.description,
+        location: user.location,
+        company: user.company,
+        socialLinks: user.socialMediaLinks, 
+        followers: user.followers,
+        following: user.following,
+        projects: user.projects,
+      });
     } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
+      res.status(500).json({ message: "Server error", error: error.message });
     }
-};
+  };
+  
 
 
 // @desc Get a user's profile
@@ -55,8 +62,8 @@ const getUserProfile = async (req, res) => {
             location: user.location,
             company: user.company,
             socialLinks: user.socialLinks,
-            followers: user.followers.length,
-            following: user.following.length,
+            followers: user.followers, 
+            following: user.following, 
             projects: user.projects,
         });
     } catch (error) {
@@ -68,52 +75,46 @@ const getUserProfile = async (req, res) => {
 // @desc Update user profile
 // @route PUT /api/users/profile
 // @access Private
+
 const updateUserProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id);
-
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        const {
-            name,
-            username,
-            avatar,
-            bio,
-            location,
-            company,
-            socialMediaLinks,
-        } = req.body;
-
-        // Update user fields if provided
-        if (name) user.name = name;
-        if (username) user.username = username;
-        if (avatar) user.avatar = avatar;
-        if (bio) user.bio = bio;
-        if (location) user.location = location;
-        if (company) user.company = company;
-        if (socialMediaLinks) user.socialMediaLinks = socialMediaLinks;
-
-        const updatedUser = await user.save();
-
-        res.status(200).json({
-            message: "Profile updated successfully",
-            user: {
-                name: updatedUser.name,
-                username: updatedUser.username,
-                avatar: updatedUser.avatar,
-                bio: updatedUser.bio,
-                location: updatedUser.location,
-                company: updatedUser.company,
-                socialMediaLinks: updatedUser.socialMediaLinks,
-            },
-        });
+      const user = await User.findById(req.user._id);
+      if (!user) return res.status(404).json({ message: "User not found" });
+  
+      const { name, username, bio, location, company, socialLinks } = req.body;
+  
+      if (name) user.name = name;
+      if (username) user.username = username;
+      if (bio) user.description = bio;
+      if (location) user.location = location;
+      if (company) user.company = company;
+      if (socialLinks) user.socialMediaLinks = JSON.parse(socialLinks);
+  
+      //  Handle Avatar Upload (from file)
+      if (req.file) {
+        const base64Image = req.file.buffer.toString("base64");
+        user.avatar = `data:${req.file.mimetype};base64,${base64Image}`;
+      }
+  
+      const updatedUser = await user.save();
+  
+      res.status(200).json({
+        message: "Profile updated successfully",
+        user: {
+          name: updatedUser.name,
+          username: updatedUser.username,
+          avatar: updatedUser.avatar,
+          bio: updatedUser.description,
+          location: updatedUser.location,
+          company: updatedUser.company,
+          socialLinks: updatedUser.socialMediaLinks,
+        },
+      });
     } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
+      res.status(500).json({ message: "Server error", error: error.message });
     }
-};
-
+  };
+  
 // @desc Follow a user
 // @route POST /api/users/:id/follow
 // @access Private
