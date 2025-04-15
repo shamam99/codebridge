@@ -51,11 +51,11 @@ exports.updateComment = async (req, res) => {
 exports.deleteComment = async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.id);
-    if (!comment || comment.userId.toString() !== req.user._id.toString()) {
+    if (!comment || comment.userId.toString() !== req.user._id?.toString()) {
       return res.status(403).json({ message: "Unauthorized to delete this comment" });
     }
 
-    await comment.remove();
+    await Comment.deleteOne({ _id: comment._id });
     res.json({ message: "Comment deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Failed to delete comment", error });

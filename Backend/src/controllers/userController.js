@@ -56,7 +56,6 @@ const getUserProfile = async (req, res) => {
 
         res.status(200).json({
             name: user.name,
-            username: user.username,
             avatar: user.avatar,
             bio: user.bio,
             location: user.location,
@@ -81,10 +80,9 @@ const updateUserProfile = async (req, res) => {
       const user = await User.findById(req.user._id);
       if (!user) return res.status(404).json({ message: "User not found" });
   
-      const { name, username, bio, location, company, socialLinks } = req.body;
+      const { name, bio, location, company, socialLinks } = req.body;
   
       if (name) user.name = name;
-      if (username) user.username = username;
       if (bio) user.description = bio;
       if (location) user.location = location;
       if (company) user.company = company;
@@ -102,7 +100,6 @@ const updateUserProfile = async (req, res) => {
         message: "Profile updated successfully",
         user: {
           name: updatedUser.name,
-          username: updatedUser.username,
           avatar: updatedUser.avatar,
           bio: updatedUser.description,
           location: updatedUser.location,
