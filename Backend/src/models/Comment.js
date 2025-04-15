@@ -4,16 +4,19 @@ const CommentSchema = new mongoose.Schema({
   postId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Post",
-    required: true,
+    required: [true, "Post ID is required."],
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true,
+    required: [true, "User ID is required."],
   },
   content: {
     type: String,
-    required: true,
+    required: [true, "Comment content is required."],
+    minlength: [1, "Comment cannot be empty."],
+    maxlength: [1000, "Comment cannot exceed 1000 characters."],
+    trim: true,
   },
   timestamp: {
     type: Date,
@@ -21,6 +24,7 @@ const CommentSchema = new mongoose.Schema({
   },
 });
 
+// Output formatting
 CommentSchema.set("toJSON", {
   transform: (doc, ret) => {
     ret.id = ret._id.toString();

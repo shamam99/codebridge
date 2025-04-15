@@ -4,79 +4,110 @@ const bcrypt = require("bcryptjs");
 // Import the Project model
 require("./Project");
 
-const UserSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: true,
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-    },
-    password: {
-        type: String,
-        required: function () {
-            return !this.googleId;
-        },
-    },
-    role: {
-        type: String,
-        enum: ["user", "admin"],
-        default: "user",
-    },
+const urlRegex = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-./?%&=]*)?$/;
 
-    googleId: {
-        type: String, 
-        default: null,
+const UserSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    minlength: 2,
+    maxlength: 50,
+    validate: {
+      validator: function (v) {
+        return /^[A-Za-z\s]+$/.test(v);
+      },
+      message: "Name must contain only letters and spaces.",
     },
-    username: {
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    validate: {
+      validator: function (v) {
+        return /.+@.+\..+/.test(v);
+      },
+      message: "Invalid email format.",
+    },
+  },
+  password: {
+    type: String,
+    required: function () {
+      return !this.googleId;
+    },
+    minlength: 6,
+    maxlength: 10,
+    validate: {
+      validator: function (v) {
+        if (!v) return true; // Skip if using Google
+        return /^(?=.*[a-zA-Z])(?=.*\d).+$/.test(v);
+      },
+      message: "Password must contain at least one letter and one number.",
+    },
+  },
+  role: {
+    type: String,
+    enum: ["user", "admin"],
+    default: "user",
+  },
+  googleId: {
+    type: String,
+    default: null,
+  },
+  avatar: {
+    type: String,
+    default: null,
+  },
+  description: {
+    type: String,
+    default: null,
+    maxlength: 200,
+  },
+  followers: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
+  following: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
+  company: {
+    type: String,
+    default: null,
+    maxlength: 100,
+  },
+  location: {
+    type: String,
+    default: null,
+    maxlength: 100,
+  },
+  socialMediaLinks: [
+    {
+      platform: { type: String },
+      url: {
         type: String,
-        unique: true, 
-        default: null,
-    },
-    avatar: {
-        type: String, 
-        default: null,
-    },
-    description: {
-        type: String,
-        default: null,
-    },
-    followers: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User", 
+        validate: {
+          validator: function (v) {
+            return !v || urlRegex.test(v);
+          },
+          message: "Invalid URL format.",
         },
-    ],
-    following: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User", 
-        },
-    ],
-    company: {
-        type: String,
-        default: null,
+      },
     },
-    location: {
-        type: String, 
-        default: null,
+  ],
+  projects: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Project",
     },
-    socialMediaLinks: [
-        {
-            platform: { type: String }, 
-            url: { type: String },
-        },
-    ],
-    projects: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Project", 
-        },
-    ],
+  ],
 }, {
-    timestamps: true,
+  timestamps: true,
 });
 
 // Hash password before saving
