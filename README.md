@@ -209,6 +209,5 @@ See `LICENSE` for more information.
 
 ---
 
-> Developed by Shamam Alkafri — Apple Developer Academy 2025  
-> Special thanks to the mentors and the community contributors.
+> Developed by Shamam
 
