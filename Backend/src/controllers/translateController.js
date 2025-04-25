@@ -1,6 +1,6 @@
 const { translateCode } = require("../utils/codeTranslator");
 const Translation = require("../models/Translation");
-const { runCode } = require("../utils/codeRunner");
+const { runCode, debugCode: debugCodeUtil  } = require("../utils/codeRunner");
 
 // @desc Translate Code
 // @route POST /api/translate
@@ -59,33 +59,46 @@ const getLanguages = (req, res) => {
 // @route POST /api/code/run
 const runCodeHandler = async (req, res) => {
     const { code, language } = req.body;
+
+    if (!code || !language) {
+      return res.status(400).json({ message: "Code and language are required" });
+    }
+  
+    try {
+      const result = await runCode(code, language);
+      const status = result.success ? 200 : 400;
+  
+      res.status(status).json({
+        message: result.success ? "Execution success" : "Execution failed",
+        output: result.output,
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Server error", output: error.message });
+    }
+  };
+
+// @desc Debug code
+// @route POST /api/code/debug
+const debugCodeHandler = async (req, res) => {
+    const { code, language } = req.body;
   
     if (!code || !language) {
       return res.status(400).json({ message: "Code and language are required" });
     }
   
     try {
-      const output = await runCode(code, language);
-      res.status(200).json({ message: "Execution success", output });
+      const result = await debugCodeUtil(code, language);
+      const status = result.success ? 200 : 400;
+  
+      res.status(status).json({
+        message: result.success ? "Debugging success" : "Debugging failed",
+        debugOutput: result.output,
+      });
     } catch (error) {
-      res.status(500).json({ message: "Execution failed", output: error.toString() });
+      res.status(500).json({ message: "Server error", debugOutput: error.message });
     }
   };
 
-// @desc Debug code
-// @route POST /api/code/debug
-const debugCode = async (req, res) => {
-    const { code, language } = req.body;
-
-    try {
-        const debugOutput = `Code debugged successfully in ${language}.`;
-
-        res.status(200).json({ message: "Code debugged successfully", debugOutput });
-    } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
-    }
-};
-
-module.exports = { translateCodeHandler, getTranslationHistory, getLanguages, runCodeHandler, debugCode };
+module.exports = { translateCodeHandler, getTranslationHistory, getLanguages, runCodeHandler, debugCodeHandler };
 
 

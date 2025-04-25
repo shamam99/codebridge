@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 
 // Example number you want to hash
-const numberToHash = "12345678sH#"; // You can change this to any number
+const numberToHash = "1234567s"; // You can change this to any number
 
 // Hashing function
 async function hashInput(input) {
