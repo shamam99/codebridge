@@ -1,5 +1,6 @@
 const { translateCode } = require("../utils/codeTranslator");
 const Translation = require("../models/Translation");
+const { runCode } = require("../utils/codeRunner");
 
 // @desc Translate Code
 // @route POST /api/translate
@@ -56,17 +57,20 @@ const getLanguages = (req, res) => {
 
 // @desc Run code
 // @route POST /api/code/run
-const runCode = async (req, res) => {
+const runCodeHandler = async (req, res) => {
     const { code, language } = req.body;
-
-    try {
-        const output = `Code executed successfully in ${language}.`;
-
-        res.status(200).json({ message: "Code executed successfully", output });
-    } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
+  
+    if (!code || !language) {
+      return res.status(400).json({ message: "Code and language are required" });
     }
-};
+  
+    try {
+      const output = await runCode(code, language);
+      res.status(200).json({ message: "Execution success", output });
+    } catch (error) {
+      res.status(500).json({ message: "Execution failed", output: error.toString() });
+    }
+  };
 
 // @desc Debug code
 // @route POST /api/code/debug
@@ -82,6 +86,6 @@ const debugCode = async (req, res) => {
     }
 };
 
-module.exports = { translateCodeHandler, getTranslationHistory, getLanguages, runCode, debugCode };
+module.exports = { translateCodeHandler, getTranslationHistory, getLanguages, runCodeHandler, debugCode };
 
 

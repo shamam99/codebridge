@@ -1,5 +1,5 @@
 const express = require("express");
-const { translateCodeHandler, getTranslationHistory, getLanguages, runCode, debugCode } = require("../controllers/translateController");
+const { translateCodeHandler, getTranslationHistory, getLanguages, runCodeHandler, debugCode } = require("../controllers/translateController");
 const { protect } = require("../middlewares/authMiddleware");
 
 const router = express.Router();
@@ -14,7 +14,7 @@ router.get("/history", protect, getTranslationHistory);
 router.get("/languages", getLanguages);
 
 // Run Code
-router.post("/run", runCode);
+router.post("/run", runCodeHandler);
 
 // Debug Code
 router.post("/debug", debugCode);
