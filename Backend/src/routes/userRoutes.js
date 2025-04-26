@@ -4,6 +4,7 @@ const {
     getMyProfile,
     getUserProfile,
     updateUserProfile,
+    deleteAvatar,
     followUser,
     unfollowUser,
     getFollowers,
@@ -34,5 +35,7 @@ router.get("/:id/followers", protect, getFollowers);
 
 // Get Following
 router.get("/:id/following", protect, getFollowing);
+
+router.delete("/profile/avatar", protect, deleteAvatar);
 
 module.exports = router;

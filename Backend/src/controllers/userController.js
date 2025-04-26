@@ -111,6 +111,18 @@ const updateUserProfile = async (req, res) => {
       res.status(500).json({ message: "Server error", error: error.message });
     }
   };
+
+  const deleteAvatar = async (req, res) => {
+    try {
+      const user = await User.findById(req.user._id);
+      user.avatar = null;
+      await user.save();
+      res.status(200).json({ message: "Avatar removed successfully" });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to remove avatar", error: err.message });
+    }
+  };
+  
   
 // @desc Follow a user
 // @route POST /api/users/:id/follow
@@ -205,4 +217,4 @@ const getFollowing = async (req, res) => {
 };
 
 
-module.exports = { getMyProfile, getUserProfile, updateUserProfile, followUser, unfollowUser, getFollowers, getFollowing};
+module.exports = { getMyProfile, getUserProfile, updateUserProfile, deleteAvatar, followUser, unfollowUser, getFollowers, getFollowing};

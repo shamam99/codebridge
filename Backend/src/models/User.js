@@ -37,7 +37,6 @@ const UserSchema = new mongoose.Schema({
       return !this.googleId;
     },
     minlength: 6,
-    maxlength: 10,
     validate: {
       validator: function (v) {
         if (!v) return true; // Skip if using Google
