@@ -10,14 +10,11 @@ const getPosts = async (req, res) => {
     const userId = req.user._id;
     const searchQuery = req.query.search || "";
 
-    // Get the user's following list
     const user = await User.findById(userId).select("following");
     const followingIds = user.following;
 
-    // Include both followed users and self
     const visibleUserIds = [...followingIds, userId];
 
-    // Fetch posts
     const posts = await Post.find({
       userId: { $in: visibleUserIds },
       $or: [
@@ -25,26 +22,19 @@ const getPosts = async (req, res) => {
         { content: { $regex: searchQuery, $options: "i" } },
       ],
     })
-      .populate("userId", "name avatar")
-      .sort({ timestamp: -1 });
+    .populate("userId", "name avatar")
+    .sort({ timestamp: -1 });
 
-    // Fetch comment counts
-    const postIds = posts.map((p) => p._id);
-    const commentCounts = await Comment.aggregate([
-      { $match: { postId: { $in: postIds } } },
-      { $group: { _id: "$postId", count: { $sum: 1 } } },
-    ]);
-
-    const commentCountMap = {};
-    commentCounts.forEach((c) => {
-      commentCountMap[c._id.toString()] = c.count;
-    });
-
-    // Attach comment count to each post
-    const postsWithCommentCounts = posts.map((p) => ({
-      ...p.toObject(),
-      commentCount: commentCountMap[p._id.toString()] || 0,
-    }));
+    // Get comments count per post
+    const postsWithCommentCounts = await Promise.all(
+      posts.map(async (post) => {
+        const commentsCount = await Comment.countDocuments({ postId: post._id });
+        return {
+          ...post.toObject(),
+          commentsCount,
+        };
+      })
+    );
 
     res.json(postsWithCommentCounts);
   } catch (error) {
@@ -52,6 +42,7 @@ const getPosts = async (req, res) => {
     res.status(500).json({ message: "Failed to load posts", error });
   }
 };
+
 
 // @desc Fetch Post by ID
 // @route GET /api/community/:id
