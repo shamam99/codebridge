@@ -105,6 +105,17 @@ const UserSchema = new mongoose.Schema({
       ref: "Project",
     },
   ],
+  starredProjects: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Project",
+    },
+  ],
+  savedPosts: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Post",
+  }],
+  
 }, {
   timestamps: true,
 });

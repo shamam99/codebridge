@@ -9,6 +9,7 @@ const {
     unfollowUser,
     getFollowers,
     getFollowing,
+    getSavedPosts
 } = require("../controllers/userController");
 const { protect } = require("../middlewares/authMiddleware");
 const multer = require("multer");
@@ -37,5 +38,8 @@ router.get("/:id/followers", protect, getFollowers);
 router.get("/:id/following", protect, getFollowing);
 
 router.delete("/profile/avatar", protect, deleteAvatar);
+
+// /routes/userRoutes.js
+router.get("/profile/saved", protect, getSavedPosts);
 
 module.exports = router;

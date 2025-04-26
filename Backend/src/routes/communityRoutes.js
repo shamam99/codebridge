@@ -1,6 +1,6 @@
 const express = require("express");
 const { protect } = require("../middlewares/authMiddleware");
-const { getPosts, getPostById, createPost, updatePost, deletePost } = require("../controllers/communityController");
+const { getPosts, getPostById, createPost, updatePost, deletePost, toggleSavePost } = require("../controllers/communityController");
 
 const router = express.Router();
 
@@ -10,5 +10,6 @@ router.get("/:id", protect, getPostById);
 router.post("/", protect, createPost);
 router.put("/:id", protect, updatePost);
 router.delete("/:id", protect, deletePost);
+router.post("/:id/save", protect, toggleSavePost);
 
 module.exports = router;

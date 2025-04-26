@@ -216,5 +216,18 @@ const getFollowing = async (req, res) => {
     }
 };
 
+// /controllers/userController.js
+const getSavedPosts = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate({
+      path: "savedPosts",
+      populate: { path: "userId", select: "name avatar" }
+    });
+    res.json(user.savedPosts);
+  } catch (error) {
+    res.status(500).json({ message: "Error loading saved posts", error });
+  }
+};
 
-module.exports = { getMyProfile, getUserProfile, updateUserProfile, deleteAvatar, followUser, unfollowUser, getFollowers, getFollowing};
+
+module.exports = { getMyProfile, getUserProfile, updateUserProfile, deleteAvatar, followUser, unfollowUser, getFollowers, getFollowing, getSavedPosts};
