@@ -2,12 +2,11 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Post = require('../models/Post');
-const { protect } = require('../middlewares/authMiddleware');
 
 // @desc    Search for users and posts
 // @route   GET /api/search
-// @access  Private
-router.get('/search', protect, async (req, res) => {
+// @access  Public
+router.get('/', async (req, res) => {
   const { q } = req.query;
 
   try {
@@ -16,6 +15,7 @@ router.get('/search', protect, async (req, res) => {
 
     if (q && q.trim()) {
       users = await User.find({
+        isActive: true, 
         $or: [
           { name: { $regex: q, $options: 'i' } },
           { username: { $regex: q, $options: 'i' } }
@@ -28,12 +28,10 @@ router.get('/search', protect, async (req, res) => {
           { content: { $regex: q, $options: 'i' } }
         ]
       }).populate('userId', 'name username avatar').sort({ timestamp: -1 });
-    } else {
-      // No search query: show only followed users + self
-      const currentUser = await User.findById(req.user._id).select("following");
-      const visibleUserIds = [...currentUser.following, req.user._id];
 
-      posts = await Post.find({ userId: { $in: visibleUserIds } })
+    } else {
+      // No search query
+      posts = await Post.find()
         .populate('userId', 'name username avatar')
         .sort({ timestamp: -1 });
     }
@@ -45,6 +43,3 @@ router.get('/search', protect, async (req, res) => {
 });
 
 module.exports = router;
-
-
-

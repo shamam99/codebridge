@@ -45,7 +45,7 @@ app.use(
 const corsOptions = {
     origin: "http://localhost:5173",
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
   };
   
@@ -65,7 +65,7 @@ app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/projects", require("./routes/projectRoutes"));
 app.use("/api/code/pages", require("./routes/codePageRoutes"));
 app.use("/api/comments", require("./routes/commentRoutes"));
-app.use("/api", require("./routes/searchRoutes"));
+app.use("/api/search", require("./routes/searchRoutes"));
 app.use("/api/admin/dashboard", require("./routes/adminDashboardRoutes"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 

@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   getAllUsers,
   deleteUser,
+  toggleUserActiveStatus,
   getAllPosts,
   deletePost,
   getAllComments,
@@ -20,6 +21,7 @@ router.use(protect, admin);
 // Users
 router.get("/users", getAllUsers);
 router.delete("/users/:id", deleteUser);
+router.patch("/users/:id/toggle", toggleUserActiveStatus);
 
 // Posts
 router.get("/posts", getAllPosts);

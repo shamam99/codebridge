@@ -9,7 +9,7 @@ const {
 
 const router = express.Router();
 
-router.get("/post/:postId", protect, getCommentsByPost);
+router.get("/post/:postId",  getCommentsByPost);
 router.post("/", protect, createComment);
 router.put("/:id", protect, updateComment);
 router.delete("/:id", protect, deleteComment);

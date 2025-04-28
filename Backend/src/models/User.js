@@ -115,6 +115,11 @@ const UserSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Post",
   }],
+
+  isActive: {
+    type: Boolean,
+    default: true,  // By default, every new user is active
+  },
   
 }, {
   timestamps: true,

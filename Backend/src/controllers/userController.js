@@ -45,7 +45,7 @@ const getMyProfile = async (req, res) => {
 // @access Public
 const getUserProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id)
+        const user = await User.findOne({ _id: req.params.id, isActive: true })
             .populate("followers", "name username avatar")
             .populate("following", "name username avatar")
             .populate("projects", "title description");
@@ -75,41 +75,46 @@ const getUserProfile = async (req, res) => {
 // @route PUT /api/users/profile
 // @access Private
 const updateUserProfile = async (req, res) => {
-    try {
-      const user = await User.findById(req.user._id);
-      if (!user) return res.status(404).json({ message: "User not found" });
-  
-      const { name, bio, location, company, socialLinks } = req.body;
-  
-      if (name) user.name = name;
-      if (bio) user.description = bio;
-      if (location) user.location = location;
-      if (company) user.company = company;
-      if (socialLinks) user.socialMediaLinks = JSON.parse(socialLinks);
-  
-      //  Handle Avatar Upload (from file)
-      if (req.file) {
-        const base64Image = req.file.buffer.toString("base64");
-        user.avatar = `data:${req.file.mimetype};base64,${base64Image}`;
-      }
-  
-      const updatedUser = await user.save();
-  
-      res.status(200).json({
-        message: "Profile updated successfully",
-        user: {
-          name: updatedUser.name,
-          avatar: updatedUser.avatar,
-          bio: updatedUser.description,
-          location: updatedUser.location,
-          company: updatedUser.company,
-          socialLinks: updatedUser.socialMediaLinks,
-        },
-      });
-    } catch (error) {
-      res.status(500).json({ message: "Server error", error: error.message });
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const { name, bio, location, company, socialLinks, email, password } = req.body;
+
+    if (name !== undefined) user.name = name;
+    if (bio !== undefined) user.description = bio;
+    if (location !== undefined) user.location = location;
+    if (company !== undefined) user.company = company;
+    if (socialLinks !== undefined) user.socialMediaLinks = JSON.parse(socialLinks);
+    if (email !== undefined) user.email = email.toLowerCase();
+    if (password !== undefined && password.length >= 6) {
+      user.password = password; 
     }
-  };
+
+    if (req.file) {
+      const base64Image = req.file.buffer.toString("base64");
+      user.avatar = `data:${req.file.mimetype};base64,${base64Image}`;
+    }
+
+    const updatedUser = await user.save();
+
+    res.status(200).json({
+      message: "Profile updated successfully",
+      user: {
+        name: updatedUser.name,
+        email: updatedUser.email,
+        avatar: updatedUser.avatar,
+        bio: updatedUser.description,
+        location: updatedUser.location,
+        company: updatedUser.company,
+        socialLinks: updatedUser.socialMediaLinks,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 
   const deleteAvatar = async (req, res) => {
     try {
@@ -188,7 +193,12 @@ const unfollowUser = async (req, res) => {
 // @access Private
 const getFollowers = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id).populate("followers", "name username avatar");
+        const user = await User.findById(req.params.id)
+        .populate({
+          path: "followers",
+          match: { isActive: true },
+          select: "name username avatar"
+        })
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -204,7 +214,12 @@ const getFollowers = async (req, res) => {
 // @access Private
 const getFollowing = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id).populate("following", "name username avatar");
+        const user = await User.findById(req.params.id)
+        .populate({
+          path: "following",
+          match: { isActive: true },
+          select: "name username avatar"
+        })
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -218,15 +233,30 @@ const getFollowing = async (req, res) => {
 // /controllers/userController.js
 const getSavedPosts = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).populate({
-      path: "savedPosts",
-      populate: { path: "userId", select: "name avatar" }
-    });
-    res.json(user.savedPosts);
+    const user = await User.findById(req.user._id)
+      .populate({
+        path: "savedPosts",
+        populate: { 
+          path: "userId",
+          match: { isActive: true },
+          select: "name avatar"
+        }
+      });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const filteredSavedPosts = user.savedPosts.filter(post => post.userId !== null);
+
+    res.status(200).json(filteredSavedPosts); 
+
   } catch (error) {
-    res.status(500).json({ message: "Error loading saved posts", error });
+    console.error("Error loading saved posts", error);
+    res.status(500).json({ message: "Error loading saved posts", error: error.message });
   }
 };
+
 
 
 module.exports = { getMyProfile, getUserProfile, updateUserProfile, deleteAvatar, followUser, unfollowUser, getFollowers, getFollowing, getSavedPosts};

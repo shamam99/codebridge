@@ -8,7 +8,7 @@ const upload = require("../middlewares/uploadMiddleware");
 router.post("/", protect, upload.single("projectFile"), createProject);
 
 // Get all projects for a user
-router.get("/users/:id/projects", getUserProjects);
+router.get("/users/:id/projects", protect, getUserProjects);
 
 // Pin/Unpin project
 router.post("/:id/pin", protect, togglePinProject);

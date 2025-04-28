@@ -5,8 +5,8 @@ const { getPosts, getPostById, createPost, updatePost, deletePost, toggleSavePos
 const router = express.Router();
 
 // Community Routes
-router.get("/", protect, getPosts);
-router.get("/:id", protect, getPostById);
+router.get("/",  getPosts);
+router.get("/:id", getPostById);
 router.post("/", protect, createPost);
 router.put("/:id", protect, updatePost);
 router.delete("/:id", protect, deletePost);

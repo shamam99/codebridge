@@ -5,14 +5,14 @@ const { protect } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 // Create a new code page
-router.post("/", protect, createCodePage);
+router.post("/",  createCodePage);
 
 // Get all code pages
-router.get("/", protect, getCodePages);
+router.get("/",  getCodePages);
 
 // Delete a code page
 router.delete("/:id", protect, deleteCodePage);
 
-router.post("/debug", protect, debugCodeHandler);
+router.post("/debug",  debugCodeHandler);
 
 module.exports = router;

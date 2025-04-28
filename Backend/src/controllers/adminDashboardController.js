@@ -13,6 +13,21 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+// Toggle user active/inactive
+const toggleUserActiveStatus = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.isActive = !user.isActive;
+    await user.save();
+
+    res.json({ message: `User ${user.isActive ? "activated" : "deactivated"}` });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update user status", error: error.message });
+  }
+};
+
 // Delete a user
 const deleteUser = async (req, res) => {
   try {
@@ -27,8 +42,14 @@ const deleteUser = async (req, res) => {
 // Get all posts
 const getAllPosts = async (req, res) => {
   try {
-    const posts = await Post.find().populate("userId", "name email");
-    res.json(posts);
+    const posts = await Post.find().populate({
+      path: "userId",
+      match: { isActive: true }, 
+      select: "name email"
+    });
+    const filteredPosts = posts.filter(post => post.userId !== null);
+
+    res.json(filteredPosts);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch posts", error: error.message });
   }
@@ -48,9 +69,20 @@ const deletePost = async (req, res) => {
 // Get all comments
 const getAllComments = async (req, res) => {
   try {
-    const comments = await Comment.find().populate("userId", "name").populate("postId", "content");
-    res.json(comments);
-  } catch (error) {
+    const comments = await Comment.find()
+      .populate({
+        path: "userId",
+        match: { isActive: true }, 
+        select: "name"
+      })
+      .populate({
+        path: "postId",
+        select: "content"
+      });
+      const filteredcomments = comments.filter(comment => comment.userId !== null);
+
+      res.json(filteredcomments);
+    } catch (error) {
     res.status(500).json({ message: "Failed to fetch comments", error: error.message });
   }
 };
@@ -103,6 +135,7 @@ const deleteNews = async (req, res) => {
 module.exports = {
   getAllUsers,
   deleteUser,
+  toggleUserActiveStatus,
   getAllPosts,
   deletePost,
   getAllComments,

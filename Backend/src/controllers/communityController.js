@@ -7,41 +7,63 @@ const Comment = require("../models/Comment");
 // @access Private
 const getPosts = async (req, res) => {
   try {
-    const userId = req.user._id;
     const searchQuery = req.query.search || "";
 
-    const user = await User.findById(userId).select("following");
-    const followingIds = user.following;
+    let posts;
 
-    const visibleUserIds = [...followingIds, userId];
+    if (req.user) {
+      // logged-in user
+      const userId = req.user._id;
+      const user = await User.findById(userId).select("following");
+      const followingIds = user.following;
+      const visibleUserIds = [...followingIds, userId];
 
-    const posts = await Post.find({
-      userId: { $in: visibleUserIds },
-      $or: [
-        { title: { $regex: searchQuery, $options: "i" } },
-        { content: { $regex: searchQuery, $options: "i" } },
-      ],
-    })
-    .populate("userId", "name avatar")
-    .sort({ timestamp: -1 });
-
-    // Get comments count per post
-    const postsWithCommentCounts = await Promise.all(
-      posts.map(async (post) => {
-        const commentsCount = await Comment.countDocuments({ postId: post._id });
-        return {
-          ...post.toObject(),
-          commentsCount,
-        };
+      posts = await Post.find({
+        userId: { $in: visibleUserIds },
+        $or: [
+          { title: { $regex: searchQuery, $options: "i" } },
+          { content: { $regex: searchQuery, $options: "i" } },
+        ],
       })
-    );
+      .populate("userId", "name avatar")
+      .sort({ timestamp: -1 });
+
+    } else {
+      // visitor
+      posts = await Post.find({
+        $or: [
+          { title: { $regex: searchQuery, $options: "i" } },
+          { content: { $regex: searchQuery, $options: "i" } },
+        ],
+      })
+      .populate("userId", "name avatar")
+      .sort({ timestamp: -1 });
+    }
+
+    const postIds = posts.map((p) => p._id);
+    const commentCounts = await Comment.aggregate([
+      { $match: { postId: { $in: postIds } } },
+      { $group: { _id: "$postId", count: { $sum: 1 } } },
+    ]);
+
+    const commentCountMap = {};
+    commentCounts.forEach((c) => {
+      commentCountMap[c._id.toString()] = c.count;
+    });
+
+    const postsWithCommentCounts = posts.map((p) => ({
+      ...p.toObject(),
+      commentCount: commentCountMap[p._id.toString()] || 0,
+    }));
 
     res.json(postsWithCommentCounts);
+
   } catch (error) {
     console.error("Error fetching posts:", error);
-    res.status(500).json({ message: "Failed to load posts", error });
+    res.status(500).json({ message: "Failed to load posts", error: error.message });
   }
 };
+
 
 
 // @desc Fetch Post by ID

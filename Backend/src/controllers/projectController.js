@@ -5,31 +5,35 @@ const User = require("../models/User");
 // @route POST /api/projects
 // @access Private
 const createProject = async (req, res) => {
-    try {
-        const { title, description, visibility } = req.body;
+  try {
+      const { title, description } = req.body;
+      const visibility = req.body.visibility || "private";  
+      if (!["public", "private"].includes(visibility)) {
+        visibility = "private";
+      }
 
-        if (!req.file) {
-            return res.status(400).json({ message: "Project file is required" });
-        }
+      if (!req.file) {
+          return res.status(400).json({ message: "Project file is required" });
+      }
 
-        const newProject = new Project({
-            title,
-            description,
-            fileUrl: `/uploads/projects/${req.file.filename}`,
-            visibility: visibility || "private",
-            createdBy: req.user._id,
-        });
+      const newProject = new Project({
+          title,
+          description,
+          fileUrl: `/uploads/projects/${req.file.filename}`,
+          visibility,  
+          createdBy: req.user._id,
+      });
 
-        await newProject.save();
+      await newProject.save();
 
-        await User.findByIdAndUpdate(req.user._id, {
-            $push: { projects: newProject._id }
-        });
+      await User.findByIdAndUpdate(req.user._id, {
+          $push: { projects: newProject._id }
+      });
 
-        res.status(201).json({ message: "Project uploaded", project: newProject });
-    } catch (error) {
-        res.status(500).json({ message: "Upload failed", error: error.message });
-    }
+      res.status(201).json({ message: "Project uploaded", project: newProject });
+  } catch (error) {
+      res.status(500).json({ message: "Upload failed", error: error.message });
+  }
 };
 
 
@@ -37,12 +41,21 @@ const createProject = async (req, res) => {
 // @route GET /api/users/:id/projects
 // @access Public
 const getUserProjects = async (req, res) => {
-    try {
-        const projects = await Project.find({ createdBy: req.params.id });
-        res.status(200).json(projects);
-    } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
+  try {
+    const requestedUserId = req.params.id;
+    const currentUserId = req.user ? req.user._id.toString() : null;
+
+    let query = { createdBy: requestedUserId };
+
+    if (!currentUserId || currentUserId !== requestedUserId) {
+      query.visibility = "public";
     }
+
+    const projects = await Project.find(query);
+    res.status(200).json(projects);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 };
 
 // @desc Pin/Unpin a project

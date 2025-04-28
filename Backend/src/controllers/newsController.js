@@ -12,7 +12,6 @@ const getNews = async (req, res) => {
         const news = await News.find()
             .populate("postedBy", "name email")
             .sort({ timestamp: -1 })
-            .skip(skip)
             .limit(limit);
 
         const total = await News.countDocuments();

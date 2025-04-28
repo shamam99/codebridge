@@ -4,8 +4,14 @@ const Comment = require("../models/Comment");
 exports.getCommentsByPost = async (req, res) => {
   try {
     const comments = await Comment.find({ postId: req.params.postId })
-      .populate("userId", "name avatar")
-      .sort({ timestamp: -1 });
+    .populate({
+      path: "userId",
+      match: { isActive: true },
+      select: "name avatar"
+    })
+    .sort({ timestamp: -1 });
+
+    const filteredComments = comments.filter(comment => comment.userId !== null);
 
     res.json(comments);
   } catch (error) {

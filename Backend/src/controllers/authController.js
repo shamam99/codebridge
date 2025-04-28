@@ -47,6 +47,11 @@ const loginUser = async (req, res) => {
         const isMatch = await user.comparePassword(password);
         if (!isMatch) return res.status(400).json({ error: "Invalid email or password" });
 
+        if (!user.isActive) {
+          user.isActive = true;
+          await user.save();
+        }
+        
         res.json({
             message: "Login successful",
             userId: user._id,
