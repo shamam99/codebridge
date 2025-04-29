@@ -12,7 +12,7 @@ const getPosts = async (req, res) => {
     let posts;
 
     if (req.user) {
-      // logged-in user
+      // logged-in user here
       const userId = req.user._id;
       const user = await User.findById(userId).select("following");
       const followingIds = user.following;
